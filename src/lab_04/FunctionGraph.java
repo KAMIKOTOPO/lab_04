@@ -9,59 +9,58 @@ public class FunctionGraph {
 	}
 	public static void menu() {
 		Scanner scr = new Scanner(System.in);
-		int x;
-		try {
-		do {
-			System.out.println("\nМеню:\n" + "1)Вывести таблицу 3 функций\n" + "2)Вывести график функции S1\n"
-					+ "3)Закончить программу");
+
+
+		while(true) try{
+			System.out.println("""
+									Меню:
+									1)Вывести таблицу 3 функций
+									2)Вывести график функции S1
+									3)Закончить программу
+									""");
 			System.out.print("Выберите одну из предложенных операций: ");
-			x = scr.nextInt();
-			try {
-				System.out.println();
+			int x = scr.nextInt();
 				switch (x) {
 				case 1:
-					printTable(partMenu(scr));
+					printTable(partMenu());
 					break;
 				case 2:
-					printGraph(partMenu2(scr), scr);
+					printGraph(partMenu2());
 					break;
 				case 3:
 					System.out.println("Завершение программы...");
-					break;
+					return;
 				default:
 					System.out.println("Нет такой команды!!!");
 				}
-			} catch (java.util.InputMismatchException  e) {
-				System.out.println();
-				System.out.println("Вы ввели некоректные данные");
-				scr.nextLine();
-			}
 			
-		} while (x != 3);
-	}catch (Exception e) {
-		System.out.println();
-		System.out.println("Вы ввели некоректные данные");
-		menu();
+		}catch (Exception e) {
+			System.out.println();
+			System.out.println("Вы ввели некоректные данные");
+			scr.nextLine();
+		}
 	}
+
+
+	
+
+    public static Graph partMenu() {
+		Scanner scanner = new Scanner(System.in);	
+    	System.out.print("Введите первое значение: ");
+			double first = scanner.nextDouble();
+			System.out.print("Введите шаг: ");
+			double step = scanner.nextDouble();
+			System.out.print("Введите последнее значение значение: ");
+			double end = scanner.nextDouble(); 	
+			return new Graph(first, step, end);
 	}
-    public static Graph partMenu(Scanner scr) {
+    public static Graph partMenu2() {
+    	Scanner scr = new Scanner(System.in);
     	System.out.print("Введите первое значение: ");
 		double first = scr.nextDouble();
-		System.out.print("Введите шаг: ");
-		double step = scr.nextDouble();
 		System.out.print("Введите последнее значение значение: ");
 		double end = scr.nextDouble();
-		
-		Graph gr = new Graph(first, step, end);
-		return gr;
-	}
-    public static Graph partMenu2(Scanner scr) {
-    	System.out.print("Введите первое значение: ");
-		double first = scr.nextDouble();
-		System.out.print("Введите последнее значение значение: ");
-		double end = scr.nextDouble();
-		Graph gr = new Graph(first, end);
-		return gr;
+		return new Graph(first, end);
     }
 		
 	
@@ -69,7 +68,8 @@ public class FunctionGraph {
     	System.out.println();
     	System.out.println(gr.printTableFunctions());
     }
-    public static void printGraph(Graph gr, Scanner scr) {
+    public static void printGraph(Graph gr) {
+    	Scanner scr = new Scanner(System.in);
     	System.out.print("Введите количество засечек от 4 до 8: ");
     	int serifs = scr.nextInt();
     	System.out.println();
@@ -136,13 +136,9 @@ class Graph {
 
     public StringBuilder printGraphFunctions(int serifs) {
     	StringBuilder graph = new StringBuilder();
-    	if(firstValue<=0&&endValue<=0) {
-    		graph.append("Графика нет смысла выводить, так как на этих промежутках он не имеет значений");
-    	}
-    	else if(firstValue>endValue||(firstValue<endValue&&step<=0)) {
-    		graph.append("Такого нет");
-    	}
-    	
+    	if(firstValue<=0&&endValue<=0||(firstValue==endValue)) {
+    		graph.append("Графика нет смысла выводить, так как на этих промежутках он не имеет значений\n");
+    	} 
     	else {
     	int width = 80;
         int height = 20;
@@ -150,27 +146,29 @@ class Graph {
         for (char[] line : plot) {
             Arrays.fill(line, '-');
         }
-        double minY = Integer.MAX_VALUE;
-        double maxY = Integer.MIN_VALUE;
-        for (double x = firstValue; x <= endValue; x += step) {
+//        double minY = Math.min(s1(firstValue), s1(endValue));
+//        double maxY = Math.max(s1(firstValue), s1(endValue));
+        double first = 0;
+        for (double x = firstValue; x <= endValue; x ++) {
             if (x > 0) {
-                double y = s1(x);
-                minY = Math.min(minY, y);
-                maxY = Math.max(maxY, y);
+                first = x;
+                break;
             }
         }
+        double minY = Math.min(s1(first), s1(endValue));
+        double maxY = Math.max(s1(first), s1(endValue));
         double end = endValue;
-        for (double x = firstValue; x <= endValue; x += step) {
-            if (x > 0) {
-                double y = s1(x);
+        for (double x = first; x <= endValue; x+=(maxY-minY)/(width-1)) {
+                if(x>0) {
+        		double y = s1(x);
 
-                double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
+                double xInterpolated = (x - first) * (height - 1) / (endValue - first);
                 double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
                 int row = (int) Math.round(xInterpolated);
                 int col = (int) Math.round(yInterpolated);
 
                 plot[row][col] = '*';
-            }
+                }
         }
         int numWidth = 6;
         int spaceWidth = (width - numWidth * serifs) / (serifs - 1);
