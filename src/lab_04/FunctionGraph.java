@@ -1,48 +1,48 @@
 package lab_04;
 
-
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class FunctionGraph {
 	public static void main(String[] args) {
-		start();
+		menu();
 	}
-    public static void start(){
-    		
-    		try(Scanner scr = new Scanner(System.in)) {	
-    			menu(scr);
-    			
-			} catch (Exception e) {
-				System.out.println("Ошибка!!!");
-				
-			}
-    }
-    public static void menu(Scanner scr) {
-
+	public static void menu() {
+		Scanner scr = new Scanner(System.in);
 		int x;
-		do{
-			System.out.println();
-			System.out.println("Меню:\n"+"1)Вывести таблицу 3 функций\n"+"2)Вывести график функции S1\n"+"3)Закончить программу");
+		try {
+		do {
+			System.out.println("\nМеню:\n" + "1)Вывести таблицу 3 функций\n" + "2)Вывести график функции S1\n"
+					+ "3)Закончить программу");
 			System.out.print("Выберите одну из предложенных операций: ");
 			x = scr.nextInt();
-		switch(x){
-		case 1:
+			try {
+				System.out.println();
+				switch (x) {
+				case 1:
+					printTable(partMenu(scr));
+					break;
+				case 2:
+					printGraph(partMenu2(scr), scr);
+					break;
+				case 3:
+					System.out.println("Завершение программы...");
+					break;
+				default:
+					System.out.println("Нет такой команды!!!");
+				}
+			} catch (java.util.InputMismatchException  e) {
+				System.out.println();
+				System.out.println("Вы ввели некоректные данные");
+				scr.nextLine();
+			}
 			
-			printTable(partMenu(scr));
-			break;
-		case 2:
-			
-			printGraph(partMenu(scr), scr);
-
-			break;
-		case 3:
-			System.out.println("Завершение программы...");
-			break;
-		default:
-            System.out.println("Нет такой команды!!!");
-		}
-		}while(x!=3);
+		} while (x != 3);
+	}catch (Exception e) {
+		System.out.println();
+		System.out.println("Вы ввели некоректные данные");
+		menu();
+	}
 	}
     public static Graph partMenu(Scanner scr) {
     	System.out.print("Введите первое значение: ");
@@ -51,9 +51,20 @@ public class FunctionGraph {
 		double step = scr.nextDouble();
 		System.out.print("Введите последнее значение значение: ");
 		double end = scr.nextDouble();
+		
 		Graph gr = new Graph(first, step, end);
 		return gr;
 	}
+    public static Graph partMenu2(Scanner scr) {
+    	System.out.print("Введите первое значение: ");
+		double first = scr.nextDouble();
+		System.out.print("Введите последнее значение значение: ");
+		double end = scr.nextDouble();
+		Graph gr = new Graph(first, end);
+		return gr;
+    }
+		
+	
     public static void printTable(Graph gr) {
     	System.out.println();
     	System.out.println(gr.printTableFunctions());
@@ -77,6 +88,13 @@ class Graph {
         this.step = step;
         this.endValue = endValue;
     }
+    
+
+	public Graph(double firstValue, double endValue) {
+		this.firstValue = firstValue;
+		this.endValue = endValue;
+	}
+
 
 	public double s1(double x) {
 //		return x * x;
@@ -93,8 +111,8 @@ class Graph {
 
     public StringBuilder printTableFunctions() {
     	StringBuilder tableFunctions = new StringBuilder();
-    	if(firstValue>endValue||(firstValue<endValue&&step<=0)) {
-    		tableFunctions.append("Такого нет");
+    	if((firstValue>endValue&&step>=0)||(firstValue<endValue&&step<=0)) {
+    		tableFunctions.append(("\nС такими данными нельзя построить таблицу, так как никогда не получится конечного значения!!!"))  ;
     	}
     	else {
 		String sep = "+----------+----------+----------+----------+\n";
@@ -119,7 +137,7 @@ class Graph {
     public StringBuilder printGraphFunctions(int serifs) {
     	StringBuilder graph = new StringBuilder();
     	if(firstValue<=0&&endValue<=0) {
-    		graph.append("Графика нет смысла выводить");
+    		graph.append("Графика нет смысла выводить, так как на этих промежутках он не имеет значений");
     	}
     	else if(firstValue>endValue||(firstValue<endValue&&step<=0)) {
     		graph.append("Такого нет");
@@ -132,54 +150,46 @@ class Graph {
         for (char[] line : plot) {
             Arrays.fill(line, '-');
         }
-        double min = 0;
-       
+        double minY = Integer.MAX_VALUE;
+        double maxY = Integer.MIN_VALUE;
         for (double x = firstValue; x <= endValue; x += step) {
-        	if(x>0) {
-        		min = x;
-        		break;
-        	}
-        }
-        double max = min;
-        for (double x = firstValue; x <= endValue; x += step) {
-            if(x<=0) {
-            	continue;
-            }else {
-        	double y = s1(x);
-            min = Math.min(min, y);
-            max = Math.max(max, y);
+            if (x > 0) {
+                double y = s1(x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
             }
-          }
-        
+        }
         double end = endValue;
         for (double x = firstValue; x <= endValue; x += step) {
-            if(x>0) {
-        	double y = s1(x);
-//            end = x;
-            int row = (int) Math.round((x - firstValue) * height / (endValue - firstValue));
-            int col = (int) Math.round((y - min) * width / (max - min));
+            if (x > 0) {
+                double y = s1(x);
 
-			row = Math.max(0, Math.min(row, height - 1));
-			col = Math.max(0, Math.min(col, width - 1));
+                double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
+                double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+                int row = (int) Math.round(xInterpolated);
+                int col = (int) Math.round(yInterpolated);
 
-            plot[row][col] = '*';
+                plot[row][col] = '*';
             }
         }
-        double nSerifs = (max-min)/(serifs-1);
-        double z = min+nSerifs;
-        int serifsStay = serifs;
-        int ser = serifs;
-        graph.append(String.format("%.2f", min));
-        while(ser>1) {
-        	
-        	String yAxis = String.format("%s%.2f", " ".repeat((width-((serifsStay-1)*3))/(serifsStay-1)), z);
-        	z += nSerifs;
-        	ser--;
-        	graph.append(yAxis);
-        }
-//        String yAxis = String.format("%s%-5.3f%s%5.3f%n", " ".repeat(8), roundZero(min), " ".repeat(width - 10), roundZero(max));
-       graph.append("\n");
+        int numWidth = 6;
+        int spaceWidth = (width - numWidth * serifs) / (serifs - 1);
+        int extraSpaces = (width - numWidth * serifs) % (serifs - 1);
+        double serifStep = (maxY - minY) / (serifs - 1);
+        graph.append(" ".repeat(8));
+        for (int i = 0; i < serifs - 1; i++) {
+            double serifVal = minY + serifStep * i;
+            graph.append(String.format("%-6.3f", serifVal));
+            graph.append(" ".repeat(spaceWidth));
 
+            if (extraSpaces > 0) {
+                graph.append(" ");
+                extraSpaces--;
+            }
+        }
+        graph.append(String.format("%6.3f", maxY));
+        graph.append("\n");
+        
         double x = firstValue;
         double y = x;
 		for (char[] line : plot) {
