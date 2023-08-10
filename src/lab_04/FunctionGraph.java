@@ -50,6 +50,15 @@ public class FunctionGraph {
 		double step = scanner.nextDouble();
 		System.out.print("Введите последнее значение значение: ");
 		double end = scanner.nextDouble();
+		if((first > end && step > 0)) {
+			return new Graph(end, step, first);
+		}
+		if(step<0) {
+			return new Graph(end, (-1*step), first);
+		}
+		if(step == 0) {
+			return new Graph(first, 1, first);
+		}
 		return new Graph(first, step, end);
 	}
 
@@ -59,6 +68,10 @@ public class FunctionGraph {
 		double first = scr.nextDouble();
 		System.out.print("Введите последнее значение: ");
 		double end = scr.nextDouble();
+		if (first <= 0 && end<= 0 || (first== end)) {
+			System.out.println("\nГрафика нет смысла выводить, так как на этих промежутках он не имеет значений\n");
+			partMenu2();
+		}
 		return new Graph(first, end);
 	}
 
@@ -108,10 +121,7 @@ class Graph {
 
 	public StringBuilder printTableFunctions() {
 		StringBuilder tableFunctions = new StringBuilder();
-		if ((firstValue > endValue && step >= 0) || (firstValue < endValue && step <= 0)) {
-			tableFunctions.append(
-					("\nС такими данными нельзя построить таблицу, так как никогда не получится конечного значения!!!"));
-		} else {
+		 
 			String sep = "+----------+----------+----------+----------+\n";
 			tableFunctions.append(sep);
 			tableFunctions.append(String.format("|%10s|%10s|%10s|%10s|%n", "x", "S1", "S2", "S3"));
@@ -126,16 +136,13 @@ class Graph {
 			}
 
 			tableFunctions.append(sep);
-		}
 		return tableFunctions;
 
 	}
 
 	public StringBuilder printGraphFunctions(int serifs) {
 		StringBuilder graph = new StringBuilder();
-		if (firstValue <= 0 && endValue <= 0 || (firstValue == endValue)) {
-			graph.append("Графика нет смысла выводить, так как на этих промежутках он не имеет значений\n");
-		} else {
+		
 			int width = 80;
 			int height = 20;
 			char[][] plot = new char[height][width];
@@ -152,19 +159,17 @@ class Graph {
 			double minY = Math.min(s1(first), s1(endValue));
 			double maxY = Math.max(s1(first), s1(endValue));
 			double end = endValue;
-			for (double x = first; x <= endValue; x += (maxY - minY) / (width - 1)) {
-				if (x <= 0) {
-					continue;
-				} else {
+			for (double x = first; x <= endValue; x += (endValue - first) / (height - 1)) {
+				
 					double y = s1(x);
 
-					double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
+					double xInterpolated = (x - first) * (height - 1) / (endValue - first);
 					double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
 					int row = (int) Math.round(xInterpolated);
 					int col = (int) Math.round(yInterpolated);
 
 					plot[row][col] = '*';
-				}
+				
 			}
 			int numWidth = 6;
 			int spaceWidth = (width - numWidth * serifs) / (serifs - 1);
@@ -184,14 +189,13 @@ class Graph {
 			graph.append(String.format("%6.3f", maxY));
 			graph.append("\n");
 
-			double x = firstValue;
+			double x = first;
 			double y = x;
 			for (char[] line : plot) {
 				graph.append(String.format("%6.3f |", x));
 				graph.append(String.valueOf(line)).append('\n');
 				x += (end - y) / (height - 1);
 			}
-		}
 		return graph;
 
 	}
