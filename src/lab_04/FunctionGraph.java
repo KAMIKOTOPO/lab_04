@@ -36,10 +36,14 @@ public class FunctionGraph {
 					System.out.println("\nНет такой команды!!!");
 				}
 			
-		}catch (Exception e) {
+		}catch (java.util.InputMismatchException e) {
 			System.out.println("\nВы ввели некоректные данные");
 			scr.nextLine();
+		}catch (IncorrectGraphDataException e) {
+			System.out.println(e.getMessage());
+			scr.nextLine();
 		}
+//		java.lang.ArrayIndexOutOfBoundsException
 	}
 
 	public static Graph partMenu() {
@@ -51,26 +55,32 @@ public class FunctionGraph {
 		System.out.print("Введите последнее значение значение: ");
 		double end = scanner.nextDouble();
 		if((first > end && step > 0)) {
-			return new Graph(end, step, first);
+			first = end; 
+			first = end;
 		}
 		if(step<0) {
-			return new Graph(end, (-1*step), first);
+			end = first;
+			step -=1; 
+			first = end;
 		}
 		if(step == 0) {
-			return new Graph(first, 1, first);
+			step = 1; 
+			end = first;
 		}
 		return new Graph(first, step, end);
 	}
 
-	public static Graph partMenu2() {
+	public static Graph partMenu2() throws IncorrectGraphDataException {
 		Scanner scr = new Scanner(System.in);
 		System.out.print("Введите первое значение: ");
 		double first = scr.nextDouble();
 		System.out.print("Введите последнее значение: ");
 		double end = scr.nextDouble();
-		if (first <= 0 && end<= 0 || (first== end)) {
-			System.out.println("\nГрафика нет смысла выводить, так как на этих промежутках он не имеет значений\n");
-			partMenu2();
+		if (first <= 0 && end<= 0) {
+			throw new IncorrectGraphDataException("Графика нет смысла выводить, так как на этом отрезке у функции нет значений");
+		}
+		if((first== end)){
+			throw new IncorrectGraphDataException("Графика нет смысла выводить, так как , будет всего одна точка");
 		}
 		return new Graph(first, end);
 	}
@@ -80,10 +90,13 @@ public class FunctionGraph {
 		System.out.println(gr.printTableFunctions());
 	}
 
-	public static void printGraph(Graph gr) {
+	public static void printGraph(Graph gr) throws IncorrectGraphDataException {
 		Scanner scr = new Scanner(System.in);
 		System.out.print("Введите количество засечек от 4 до 8: ");
 		int serifs = scr.nextInt();
+		if(serifs>8||serifs<4) {
+			throw new IncorrectGraphDataException("Введите пожалуйста засечку в диапозоне от 4 до 8");
+		}
 		System.out.println();
 		System.out.println(gr.printGraphFunctions(serifs));
 	}
@@ -149,27 +162,32 @@ class Graph {
 			for (char[] line : plot) {
 				Arrays.fill(line, '-');
 			}
-			double first = 0;
-			for (double x = firstValue; x <= endValue; x++) {
-				if (x > 0) {
-					first = x;
-					break;
+			step = (endValue - firstValue) / (height - 1);
+			double minY = Integer.MAX_VALUE;
+			double maxY = Integer.MIN_VALUE;
+			for (double x = firstValue; x<=endValue; x += step) {
+				if(x<=0) {
+					continue;
+				}else {
+					double y = s1(x);
+					minY = Math.min(minY, y);
+					maxY = Math.max(maxY, y);
 				}
 			}
-			double minY = Math.min(s1(first), s1(endValue));
-			double maxY = Math.max(s1(first), s1(endValue));
-			double end = endValue;
-			for (double x = first; x <= endValue; x += (endValue - first) / (height - 1)) {
-				
+
+			for (double x = firstValue; x <= endValue; x += step ) {
+					if(x>0) {
 					double y = s1(x);
 
-					double xInterpolated = (x - first) * (height - 1) / (endValue - first);
+					double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
+
 					double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+
 					int row = (int) Math.round(xInterpolated);
 					int col = (int) Math.round(yInterpolated);
 
 					plot[row][col] = '*';
-				
+					}
 			}
 			int numWidth = 6;
 			int spaceWidth = (width - numWidth * serifs) / (serifs - 1);
@@ -189,12 +207,11 @@ class Graph {
 			graph.append(String.format("%6.3f", maxY));
 			graph.append("\n");
 
-			double x = first;
-			double y = x;
+			double x = firstValue;
 			for (char[] line : plot) {
 				graph.append(String.format("%6.3f |", x));
 				graph.append(String.valueOf(line)).append('\n');
-				x += (end - y) / (height - 1);
+				x += (endValue - firstValue) / (height - 1);
 			}
 		return graph;
 
@@ -204,4 +221,33 @@ class Graph {
 		return num < 1e-10 ? 0 : num;
 	}
 
+}
+class IncorrectGraphDataException extends Exception{
+
+	public IncorrectGraphDataException() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public IncorrectGraphDataException(String message, Throwable cause, boolean enableSuppression,
+			boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+		// TODO Auto-generated constructor stub
+	}
+
+	public IncorrectGraphDataException(String message, Throwable cause) {
+		super(message, cause);
+		// TODO Auto-generated constructor stub
+	}
+
+	public IncorrectGraphDataException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public IncorrectGraphDataException(Throwable cause) {
+		super(cause);
+		// TODO Auto-generated constructor stub
+	}
+	
 }
