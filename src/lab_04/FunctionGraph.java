@@ -78,14 +78,23 @@ public class FunctionGraph {
 	}
 
 	public static void printGraph(Graph gr) throws IncorrectGraphDataException {
-		Scanner scr = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите количество засечек от 4 до 8: ");
-		int serifs = scr.nextInt();
+		int serifs = scanner.nextInt();
 		System.out.println();
-		System.out.println(gr.printGraphFunctions(serifs));
+		System.out.print("Введите ширину графика: ");
+		int width = scanner.nextInt();
+		System.out.print("Введите высоту графика: ");
+		int height = scanner.nextInt();
+		System.out.println(gr.printGraphFunctions(serifs, width, height));
+	}
+	public static void sizeGraph() {
+		Scanner scanner = new Scanner(System.in);
+		
+		
 	}
 }
-
+ 
 class Graph {
 	private double firstValue;
 	private double endValue;
@@ -144,15 +153,17 @@ class Graph {
 
 	}
 
-	public StringBuilder printGraphFunctions(int serifs) throws IncorrectGraphDataException {
+
+	
+	public StringBuilder printGraphFunctions(int serifs, int width, int height) throws IncorrectGraphDataException {
 		if (serifs > 8 || serifs < 4) {
 			throw new IncorrectGraphDataException("Введите пожалуйста засечку в диапозоне от 4 до 8");
 		}
-		
+		if(width<=0||height<=0) {
+			throw new IncorrectGraphDataException("Ширина и высота должна быть больше нуля");
+		}
 		StringBuilder graph = new StringBuilder();
 
-		int width = 80;
-		int height = 20;
 		char[][] plot = new char[height][width];
 		double minY = Integer.MAX_VALUE;
 		double maxY = Integer.MIN_VALUE;
@@ -186,7 +197,8 @@ class Graph {
 		
 		}
 		int numWidth = 6;
-		int spaceWidth = (width - numWidth * serifs) / (serifs - 1);
+		int spaceWidth = Math.abs((width - numWidth * serifs)) / (serifs - 1);
+		System.out.println(spaceWidth);
 		int extraSpaces = (width - numWidth * serifs) % (serifs - 1);
 		double serifStep = (maxY - minY) / (serifs - 1);
 		graph.append(" ".repeat(8));
