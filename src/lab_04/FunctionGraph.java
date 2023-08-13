@@ -16,7 +16,7 @@ public class FunctionGraph {
 						0)Задать ширину и высоту графика
 						1)Вывести таблицу 3 функций
 						2)Вывести график функции S1
-						3)Закончить программу
+						4)Завершить работу программы
 						""");
 				System.out.print("Выберите одну из предложенных операций: ");
 				int x = scr.nextInt();
@@ -60,7 +60,7 @@ public class FunctionGraph {
 			step *= -1;
 			end = temp;
 		}
-		System.out.println(gr.printTableFunctions(first, step, end));
+		System.out.println(gr.creatTableFunctions(first, step, end));
 
 	}
 
@@ -70,10 +70,13 @@ public class FunctionGraph {
 		double first = scanner.nextDouble();
 		System.out.print("Введите последнее значение: ");
 		double end = scanner.nextDouble();
-		System.out.print("Введите количество засечек от 4 до 8: ");
+		System.out.print("Введите количество засечек: ");
 		int serifs = scanner.nextInt();
+		if(serifs<=0) {
+			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
+		}
 		System.out.println();
-		System.out.println(gr.printGraphFunctions(first, end, serifs));
+		System.out.println(gr.creatGraphFunctions(first, end, serifs));
 	}
 	public static Graph sizeGraph() throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
@@ -90,15 +93,12 @@ public class FunctionGraph {
 }
  
 class Graph {
-	private double firstValue;
-	private double endValue;
-	private double step;
 	private int widht;
 	private int heigth;
 
 
 
-	public Graph() throws IncorrectGraphDataException {
+	public Graph(){
 		this.widht = 80;
 		this.heigth = 20;
 	}
@@ -120,7 +120,7 @@ class Graph {
 		return Math.pow(Math.E, -(Math.abs(s1(x)) + Math.abs(s2(x))));
 	}
 
-	public StringBuilder printTableFunctions(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
+	public String creatTableFunctions(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
 		if (step <= 0) {
 			throw new IncorrectGraphDataException("\nС таким шагом нельзя создать таблицу");
 			}
@@ -140,21 +140,17 @@ class Graph {
 		}
 
 		tableFunctions.append(sep);
-		return tableFunctions;
+		return tableFunctions.toString();
 
 	}
 
 
 	
-	public StringBuilder printGraphFunctions(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
+	public String creatGraphFunctions(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
 		if (firstValue <= 0 && endValue <= 0) {
 			throw new IncorrectGraphDataException(
 					"\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
 		}
-		if (serifs > 8 || serifs < 4) {
-			throw new IncorrectGraphDataException("Введите пожалуйста засечку в диапозоне от 4 до 8");
-		}
-		
 		StringBuilder graph = new StringBuilder();
 		int height = this.heigth;
 		int width = this.widht;
@@ -165,7 +161,7 @@ class Graph {
 		for (char[] line : plot) {
 			Arrays.fill(line, '-');
 		}
-		step = (endValue - firstValue) / (height - 1);
+		double step = (endValue - firstValue) / (height - 1);
 
 		
 		for (double x = firstValue; x <= endValue; x += step) {
@@ -192,23 +188,19 @@ class Graph {
 		
 		}
 		int numWidth = 6;
-		int realSerifs = width/numWidth;
+		int realSerifs = (int) Math.ceil(width/numWidth);
 		if(realSerifs<serifs) {
-			if(realSerifs==1) {
-				serifs = 0;
-				System.out.printf("С такой шириной вы можете поместить максимум 1 засечку\n");
-			}
-			else if(realSerifs<1) {
-				serifs = realSerifs;
-				System.out.printf("С такой шириной вы можете поместить максимум 1 засечку\n");
-			}
-			else {
-			serifs = realSerifs;
+			
+			serifs = Math.max(1, realSerifs);
 			System.out.printf("С такой шириной вы можете поместить максимум %d засечек\n", realSerifs);
-			}
+			
 		}
-		int spaceWidth = (width - numWidth * serifs)/ (serifs - 1);
-		int extraSpaces = (width - numWidth * serifs) % (serifs - 1);
+		if(serifs==1) {
+			serifs = 0;
+		}
+		int spaceWidth = (width - numWidth * serifs)/ (serifs-1);
+		System.out.println(spaceWidth);
+		int extraSpaces = (width - numWidth * serifs) % (serifs-1);
 		double serifStep = (maxY - minY) / (serifs - 1);
 		graph.append(" ".repeat(8));
 		for (int i = 0; i < serifs - 1; i++) {
@@ -230,7 +222,7 @@ class Graph {
 			graph.append(String.valueOf(line)).append('\n');
 			x += step;
 		}
-		return graph;
+		return graph.toString();
 
 }
 	public double roundZero(double num) {
