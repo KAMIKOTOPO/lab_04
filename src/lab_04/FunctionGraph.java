@@ -47,9 +47,6 @@ public class FunctionGraph {
 	}
 
 	public static void partMenuTable(Graph gr) throws IncorrectGraphDataException {
-		if(Objects.isNull(gr)==false) {
-			throw new IncorrectGraphDataException("Вы не задали ширину и длину графика");
-		}
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите первое значение: ");
 		double first = scanner.nextDouble();
@@ -102,7 +99,8 @@ class Graph {
 
 
 	public Graph() throws IncorrectGraphDataException {
-		
+		this.widht = 80;
+		this.heigth = 20;
 	}
 	public  Graph(int width, int height) {
 		this.widht = width;
@@ -200,7 +198,7 @@ class Graph {
 				serifs = 0;
 				System.out.printf("С такой шириной вы можете поместить максимум 1 засечку\n");
 			}
-			if(realSerifs<1) {
+			else if(realSerifs<1) {
 				serifs = realSerifs;
 				System.out.printf("С такой шириной вы можете поместить максимум 1 засечку\n");
 			}
