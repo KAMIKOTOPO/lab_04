@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class FunctionGraph {
 	public static void main(String[] args) throws IncorrectGraphDataException {
 		Scanner scr = new Scanner(System.in);
-		Graph graph = new Graph();
+		Functions functions = new Functions();
 		while (true)
 			try {
 				System.out.println();
@@ -16,19 +16,19 @@ public class FunctionGraph {
 						0)Задать ширину и высоту графика
 						1)Вывести таблицу 3 функций
 						2)Вывести график функции S1
-						4)Завершить работу программы
+						3)Завершить работу программы
 						""");
 				System.out.print("Выберите одну из предложенных операций: ");
 				int x = scr.nextInt();
 				switch (x) {
 				case 0:
-					graph = sizeGraph();
+					functions = sizeGraph();
 					break;
 				case 1:
-					partMenuTable(graph);
+					partMenuTable(functions);
 					break;
 				case 2:
-					partMenuGraph(graph);
+					partMenuGraphic(functions);
 					break;
 				case 4:
 					System.out.println("Завершение программы...");
@@ -46,7 +46,7 @@ public class FunctionGraph {
 			}
 	}
 
-	public static void partMenuTable(Graph gr) throws IncorrectGraphDataException {
+	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите первое значение: ");
 		double first = scanner.nextDouble();
@@ -60,11 +60,11 @@ public class FunctionGraph {
 			step *= -1;
 			end = temp;
 		}
-		System.out.println(gr.creatTableFunctions(first, step, end));
+		System.out.println(functions.creatTable(first, step, end));
 
 	}
 
-	public static void partMenuGraph(Graph gr) throws IncorrectGraphDataException {
+	public static void partMenuGraphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите первое значение: ");
 		double first = scanner.nextDouble();
@@ -76,9 +76,9 @@ public class FunctionGraph {
 			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
 		}
 		System.out.println();
-		System.out.println(gr.creatGraphFunctions(first, end, serifs));
+		System.out.println(functions.creatGraphic(first, end, serifs));
 	}
-	public static Graph sizeGraph() throws IncorrectGraphDataException {
+	public static Functions sizeGraph() throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите ширину графика: ");
 		int width = scanner.nextInt();
@@ -88,21 +88,21 @@ public class FunctionGraph {
 			throw new IncorrectGraphDataException("Ширина и высота должна быть больше нуля");
 		}
 		System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
-		return new Graph(width, height);
+		return new Functions(width, height);
 	}
 }
  
-class Graph {
+class Functions {
 	private int widht;
 	private int heigth;
 
 
 
-	public Graph(){
+	public Functions(){
 		this.widht = 80;
 		this.heigth = 20;
 	}
-	public  Graph(int width, int height) {
+	public  Functions(int width, int height) {
 		this.widht = width;
 		this.heigth = height;
 	}
@@ -120,7 +120,7 @@ class Graph {
 		return Math.pow(Math.E, -(Math.abs(s1(x)) + Math.abs(s2(x))));
 	}
 
-	public String creatTableFunctions(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
+	public String creatTable(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
 		if (step <= 0) {
 			throw new IncorrectGraphDataException("\nС таким шагом нельзя создать таблицу");
 			}
@@ -146,7 +146,7 @@ class Graph {
 
 
 	
-	public String creatGraphFunctions(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
+	public String creatGraphic(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
 		if (firstValue <= 0 && endValue <= 0) {
 			throw new IncorrectGraphDataException(
 					"\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
@@ -188,19 +188,19 @@ class Graph {
 		
 		}
 		int numWidth = 6;
-		int realSerifs = (int) Math.ceil(width/numWidth);
+		int realSerifs = width/numWidth;
 		if(realSerifs<serifs) {
 			
 			serifs = Math.max(1, realSerifs);
 			System.out.printf("С такой шириной вы можете поместить максимум %d засечек\n", realSerifs);
 			
 		}
-		if(serifs==1) {
-			serifs = 0;
+		int spaceWidth = 0;
+		int extraSpaces = 0;
+		if(serifs!=1) {
+		spaceWidth = (width - numWidth * serifs)/ (serifs-1);
+		extraSpaces = (width - numWidth * serifs) % (serifs-1);
 		}
-		int spaceWidth = (width - numWidth * serifs)/ (serifs-1);
-		System.out.println(spaceWidth);
-		int extraSpaces = (width - numWidth * serifs) % (serifs-1);
 		double serifStep = (maxY - minY) / (serifs - 1);
 		graph.append(" ".repeat(8));
 		for (int i = 0; i < serifs - 1; i++) {
@@ -213,6 +213,7 @@ class Graph {
 				extraSpaces--;
 			}
 		}
+		
 		graph.append(String.format("%6.3f", maxY));
 		graph.append("\n");
 
