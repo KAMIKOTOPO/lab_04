@@ -145,12 +145,14 @@ class Functions {
 		StringBuilder graph = new StringBuilder();
 		int height = this.heigth;
 		int width = this.widht;
-		char[][] plot = new char[height][width];
+		StringBuilder plot = new StringBuilder("-".repeat(width));
+//		char[][] plot = new char[height][width];
+		
 		double minY = Integer.MAX_VALUE;
 		double maxY = Integer.MIN_VALUE;
-		for (char[] line : plot) {
-			Arrays.fill(line, '-');
-		}
+//		for (char[] line : plot) {
+//			Arrays.fill(line, '-');
+//		}
 		double step = (endValue - firstValue) / (height - 1);
 		for (double x = firstValue; x <= endValue; x += step) {
 			if (x > 0) {
@@ -159,16 +161,16 @@ class Functions {
 				maxY = Math.max(maxY, y);
 			}
 		}
-		for (double x = firstValue; x <= endValue; x += step) {
-			if (x > 0) {
-				double y = s1(x);
-				double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
-				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
-				int row = (int) Math.round(xInterpolated);
-				int col = (int) Math.round(yInterpolated);
-				plot[row][col] = '*';
-			}
-		}
+//		for (double x = firstValue; x <= endValue; x += step) {
+//			if (x > 0) {
+//				double y = s1(x);
+//				double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
+//				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+//				int row = (int) Math.round(xInterpolated);
+//				int col = (int) Math.round(yInterpolated);
+//				plot[row][col] = '*';
+//			}
+//		}
 		int numWidth = 6;
 		int realSerifs = width / numWidth;
 		if (realSerifs < serifs) {
@@ -197,10 +199,16 @@ class Functions {
 		graph.append(String.format("%6.3f", maxY));
 		graph.append("\n");
 		double x = firstValue;
-		for (char[] line : plot) {
-			graph.append(String.format("%6.3f |", x));
-			graph.append(String.valueOf(line)).append('\n');
-			x += step;
+		for (x = firstValue; x <= endValue; x += step) {
+			if (x > 0) {
+				double y = s1(x);
+			graph.append(String.format("\n%6.3f |", x));
+			double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+			int col = (int) Math.round(yInterpolated);
+			plot.setCharAt(col, '*');
+			graph.append(plot);
+			plot.replace(0,plot.length(), "-".repeat(width));
+			}
 		}
 		return graph.toString();
 	}
