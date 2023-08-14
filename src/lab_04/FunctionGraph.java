@@ -200,14 +200,18 @@ class Functions {
 		graph.append("\n");
 		double x = firstValue;
 		for (x = firstValue; x <= endValue; x += step) {
-			if (x > 0) {
+			if (x < 0) {
+				graph.append(String.format("\n%6.3f |", x));
+				graph.append(plot);
+			}
+			else {
 				double y = s1(x);
-			graph.append(String.format("\n%6.3f |", x));
-			double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
-			int col = (int) Math.round(yInterpolated);
-			plot.setCharAt(col, '*');
-			graph.append(plot);
-			plot.replace(0,plot.length(), "-".repeat(width));
+				graph.append(String.format("\n%6.3f |", x));
+				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+				int col = (int) Math.round(yInterpolated);
+				plot.setCharAt(col, '*');
+				graph.append(plot);
+				plot.replace(0, plot.length(), "-".repeat(width));
 			}
 		}
 		return graph.toString();
