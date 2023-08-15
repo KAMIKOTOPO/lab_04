@@ -1,5 +1,7 @@
 package lab_04;
 
+import java.io.PrintStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
@@ -15,7 +17,7 @@ public class FunctionGraph {
 						Меню:
 						0)Задать ширину и высоту графика
 						1)Вывести таблицу 3 функций
-						2)Вывести график функции S1
+						2)Вывести график одной из функций
 						3)Завершить работу программы
 						""");
 				System.out.print("Выберите одну из предложенных операций: ");
@@ -65,6 +67,13 @@ public class FunctionGraph {
 
 	public static void partMenuGraphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
+		System.out.println("""
+				График какой функции вывести?
+				1)Вывести график функции S1
+				2)Вывести график функции S2
+				3)Вывести график функции S3
+				""");
+		int numFunction = scanner.nextInt();
 		System.out.print("Введите первое значение: ");
 		double first = scanner.nextDouble();
 		System.out.print("Введите последнее значение: ");
@@ -74,8 +83,22 @@ public class FunctionGraph {
 		if (serifs <= 0) {
 			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
 		}
-		System.out.println();
-		System.out.println(functions.creatGraphic(first, end, serifs));
+		switch (numFunction) {
+		case 1:
+			System.out.println();
+			System.out.println(functions.creatGraphic(first, end, serifs));
+			break;
+		case 2:
+			System.out.println();
+			System.out.println(functions.creatGraphicS2(first, end, serifs));
+			break;
+		case 3:
+			System.out.println();
+			System.out.println(functions.creatGraphicS2(first, end, serifs));
+			break;
+		default:
+			throw new IncorrectGraphDataException("Нет функции под этим номером");
+		}
 	}
 
 	public static Functions Graphic() throws IncorrectGraphDataException {
@@ -93,16 +116,16 @@ public class FunctionGraph {
 }
 
 class Functions {
-	private int widht;
+	private int width;
 	private int heigth;
 
 	public Functions() {
-		this.widht = 80;
+		this.width = 80;
 		this.heigth = 20;
 	}
 
 	public Functions(int width, int height) {
-		this.widht = width;
+		this.width = width;
 		this.heigth = height;
 	}
 
@@ -138,40 +161,9 @@ class Functions {
 		return tableFunctions.toString();
 	}
 
-	public String creatGraphic(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
-		if (firstValue <= 0 && endValue <= 0) {
-			throw new IncorrectGraphDataException("\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
-		}
-		StringBuilder graph = new StringBuilder();
-		int height = this.heigth;
-		int width = this.widht;
-		StringBuilder plot = new StringBuilder("-".repeat(width));
-//		char[][] plot = new char[height][width];
-		
-		double minY = Integer.MAX_VALUE;
-		double maxY = Integer.MIN_VALUE;
-//		for (char[] line : plot) {
-//			Arrays.fill(line, '-');
-//		}
-		double step = (endValue - firstValue) / (height - 1);
-		for (double x = firstValue; x <= endValue; x += step) {
-			if (x > 0) {
-				double y = s1(x);
-				minY = Math.min(minY, y);
-				maxY = Math.max(maxY, y);
-			}
-		}
-//		for (double x = firstValue; x <= endValue; x += step) {
-//			if (x > 0) {
-//				double y = s1(x);
-//				double xInterpolated = (x - firstValue) * (height - 1) / (endValue - firstValue);
-//				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
-//				int row = (int) Math.round(xInterpolated);
-//				int col = (int) Math.round(yInterpolated);
-//				plot[row][col] = '*';
-//			}
-//		}
-		int numWidth = 6;
+	public String creatScaleRuler(int numWidth, int serifs, double maxY, double minY) {
+		int width = this.width;
+		StringBuilder ruler = new StringBuilder();
 		int realSerifs = width / numWidth;
 		if (realSerifs < serifs) {
 			serifs = Math.max(1, realSerifs);
@@ -185,34 +177,80 @@ class Functions {
 			extraSpaces = (width - numWidth * serifs) % (serifs - 1);
 			serifStep = (maxY - minY) / (serifs - 1);
 		}
-		graph.append(" ".repeat(8));
+		ruler.append(" ".repeat(8));
 		for (int i = 0; i < serifs - 1; i++) {
 			double serifVal = minY + serifStep * i;
-			graph.append(String.format("%-6.3f", serifVal));
-			graph.append(" ".repeat(spaceWidth));
+			ruler.append(String.format("%-6.3f", serifVal));
+			ruler.append(" ".repeat(spaceWidth));
 
 			if (extraSpaces > 0) {
-				graph.append(" ");
+				ruler.append(" ");
 				extraSpaces--;
 			}
 		}
+		return ruler.toString();
+	}
+
+	public String creatGraphic(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
+		if (firstValue <= 0 && endValue <= 0) {
+			throw new IncorrectGraphDataException(
+					"\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
+		}
+		StringBuilder graph = new StringBuilder();
+		int height = this.heigth;
+		int width = this.width;
+		StringBuilder plot = new StringBuilder("-".repeat(width));
+		double minY = Integer.MAX_VALUE;
+		double maxY = Integer.MIN_VALUE;
+		double step = (endValue - firstValue) / (height - 1);
+		for (double x = firstValue; x <= endValue; x += step) {
+			if (x > 0) {
+				double y = s1(x);
+				minY = Math.min(minY, y);
+				maxY = Math.max(maxY, y);
+			}
+		}
+		int numWidth = 6;
+		graph.append(creatScaleRuler(numWidth, serifs, maxY, minY));
 		graph.append(String.format("%6.3f", maxY));
-		graph.append("\n");
 		double x = firstValue;
 		for (x = firstValue; x <= endValue; x += step) {
 			if (x < 0) {
 				graph.append(String.format("\n%6.3f |", x));
 				graph.append(plot);
-			}
-			else {
+			} else {
 				double y = s1(x);
 				graph.append(String.format("\n%6.3f |", x));
 				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
 				int col = (int) Math.round(yInterpolated);
 				plot.setCharAt(col, '*');
 				graph.append(plot);
-				plot.replace(0, plot.length(), "-".repeat(width));
+				plot.setCharAt(col, '-');
 			}
+		}
+		return graph.toString();
+	}
+
+	public String creatGraphicS2(double firstValue, double endValue, int serifs) {
+		int height = this.heigth;
+		int width = this.width;
+		StringBuilder graph = new StringBuilder();
+		StringBuilder plot = new StringBuilder("-".repeat(width));
+		double minY = Math.min(s2(firstValue), s2(endValue));
+		double maxY = Math.max(s2(firstValue), s2(endValue));
+		double step = (endValue - firstValue) / (height - 1);
+		int numWidth = 9;
+		graph.append(creatScaleRuler(numWidth, serifs, maxY, minY));
+		graph.append(String.format("%6.3f", maxY));
+		double x = firstValue;
+		for (x = firstValue; x <= endValue; x += step) {
+			double y = s2(x);
+			graph.append(String.format("\n%6.3f |", x));
+			double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
+			int col = (int) Math.round(yInterpolated);
+			plot.setCharAt(col, '*');
+			graph.append(plot);
+			plot.setCharAt(col, '-');
 		}
 		return graph.toString();
 	}
@@ -221,7 +259,6 @@ class Functions {
 		return num < 1e-10 ? 0 : num;
 	}
 }
-
 class IncorrectGraphDataException extends Exception {
 	public IncorrectGraphDataException(String message) {
 		super(message);
