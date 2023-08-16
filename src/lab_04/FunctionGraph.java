@@ -2,14 +2,19 @@ package lab_04;
 
 import java.io.PrintStream;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.function.DoubleUnaryOperator;
 
 public class FunctionGraph {
 	public static void main(String[] args) throws IncorrectGraphDataException {
 		Scanner scr = new Scanner(System.in);
 		Functions functions = new Functions();
+		functions.add(new Function("S1", x-> x <=0? Double.NaN : 2* Math.log(x)-(1/x)));
+		System.out.println( );
 		while (true)
 			try {
 				System.out.println();
@@ -83,22 +88,6 @@ public class FunctionGraph {
 		if (serifs <= 0) {
 			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
 		}
-		switch (numFunction) {
-		case 1:
-			System.out.println();
-			System.out.println(functions.creatGraphic(first, end, serifs));
-			break;
-		case 2:
-			System.out.println();
-			System.out.println(functions.creatGraphicS2(first, end, serifs));
-			break;
-		case 3:
-			System.out.println();
-			System.out.println(functions.creatGraphicS2(first, end, serifs));
-			break;
-		default:
-			throw new IncorrectGraphDataException("Нет функции под этим номером");
-		}
 	}
 
 	public static Functions Graphic() throws IncorrectGraphDataException {
@@ -115,31 +104,54 @@ public class FunctionGraph {
 	}
 }
 
+class Function {
+	private String name;
+	private DoubleUnaryOperator func;
+	
+	public Function(String name, DoubleUnaryOperator func) {
+		this.name = name;
+		this.func = func;
+	}
+	public double value(double x) {
+		return func.applyAsDouble(x);
+	}
+	public String toString() {
+		return name;
+	}
+}
+
 class Functions {
 	private int width;
 	private int heigth;
-
+	private List<Function> functions;
 	public Functions() {
-		this.width = 80;
-		this.heigth = 20;
+		this(80, 20);
 	}
-
 	public Functions(int width, int height) {
 		this.width = width;
 		this.heigth = height;
+		this.functions = new ArrayList<Function>();
 	}
-
-	public double s1(double x) {
-		return 2 * Math.log(x) - (1 / x);
+	public void add(Function func) {
+		functions.add(func);
 	}
-
-	public double s2(double x) {
-		return Math.pow(x, 3) - 7 * x + 6.5;
+	public void setWidth(int width) {
+		this.width = width;
 	}
-
-	public double s3(double x) {
-		return Math.pow(Math.E, -(Math.abs(s1(x)) + Math.abs(s2(x))));
+	public void setHeigth(int heigth) {
+		this.heigth = heigth;
 	}
+//	public double s1(double x) {
+//		return 2 * Math.log(x) - (1 / x);
+//	}
+//
+//	public double s2(double x) {
+//		return Math.pow(x, 3) - 7 * x + 6.5;
+//	}
+//
+//	public double s3(double x) {
+//		return Math.pow(Math.E, -(Math.abs(s1(x)) + Math.abs(s2(x))));
+//	}
 
 	public String creatTable(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
 		if (step <= 0) {
@@ -161,8 +173,26 @@ class Functions {
 		return tableFunctions.toString();
 	}
 
-	public String creatScaleRuler(int numWidth, int serifs, double maxY, double minY) {
+	public String creatGraphic(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
+		if (firstValue <= 0 && endValue <= 0) {
+			throw new IncorrectGraphDataException(
+					"\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
+		}
+		StringBuilder graph = new StringBuilder();
+		int height = this.heigth;
 		int width = this.width;
+		StringBuilder plot = new StringBuilder("-".repeat(width));
+		double minY = Integer.MAX_VALUE;
+		double maxY = Integer.MIN_VALUE;
+		double step = (endValue - firstValue) / (height - 1);
+		for (double x = firstValue; x <= endValue; x += step) {
+			if (x > 0) {
+				double y =  ((Function) functions).value(x);
+				minY = Math.min(minY, y);
+				maxY = Math.max(maxY, y);
+			}
+		}
+		int numWidth = 6;
 		StringBuilder ruler = new StringBuilder();
 		int realSerifs = width / numWidth;
 		if (realSerifs < serifs) {
@@ -188,30 +218,6 @@ class Functions {
 				extraSpaces--;
 			}
 		}
-		return ruler.toString();
-	}
-
-	public String creatGraphic(double firstValue, double endValue, int serifs) throws IncorrectGraphDataException {
-		if (firstValue <= 0 && endValue <= 0) {
-			throw new IncorrectGraphDataException(
-					"\nГрафика нет смысла выводить, так как на этом отрезке у функции нет значений");
-		}
-		StringBuilder graph = new StringBuilder();
-		int height = this.heigth;
-		int width = this.width;
-		StringBuilder plot = new StringBuilder("-".repeat(width));
-		double minY = Integer.MAX_VALUE;
-		double maxY = Integer.MIN_VALUE;
-		double step = (endValue - firstValue) / (height - 1);
-		for (double x = firstValue; x <= endValue; x += step) {
-			if (x > 0) {
-				double y = s1(x);
-				minY = Math.min(minY, y);
-				maxY = Math.max(maxY, y);
-			}
-		}
-		int numWidth = 6;
-		graph.append(creatScaleRuler(numWidth, serifs, maxY, minY));
 		graph.append(String.format("%6.3f", maxY));
 		double x = firstValue;
 		for (x = firstValue; x <= endValue; x += step) {
@@ -230,31 +236,6 @@ class Functions {
 		}
 		return graph.toString();
 	}
-
-	public String creatGraphicS2(double firstValue, double endValue, int serifs) {
-		int height = this.heigth;
-		int width = this.width;
-		StringBuilder graph = new StringBuilder();
-		StringBuilder plot = new StringBuilder("-".repeat(width));
-		double minY = Math.min(s2(firstValue), s2(endValue));
-		double maxY = Math.max(s2(firstValue), s2(endValue));
-		double step = (endValue - firstValue) / (height - 1);
-		int numWidth = 9;
-		graph.append(creatScaleRuler(numWidth, serifs, maxY, minY));
-		graph.append(String.format("%6.3f", maxY));
-		double x = firstValue;
-		for (x = firstValue; x <= endValue; x += step) {
-			double y = s2(x);
-			graph.append(String.format("\n%6.3f |", x));
-			double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
-			int col = (int) Math.round(yInterpolated);
-			plot.setCharAt(col, '*');
-			graph.append(plot);
-			plot.setCharAt(col, '-');
-		}
-		return graph.toString();
-	}
-
 	public double roundZero(double num) {
 		return num < 1e-10 ? 0 : num;
 	}
