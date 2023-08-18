@@ -1,11 +1,7 @@
 package lab_04;
 
-import java.io.PrintStream;
-import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.function.DoubleUnaryOperator;
 
@@ -48,7 +44,6 @@ public class FunctionGraph {
 				default:
 					System.out.println("\nНет такой команды!!!");
 				}
-
 			} catch (java.util.InputMismatchException e) {
 				System.out.println("\nВы ввели некоректные данные");
 				scr.nextLine();
@@ -162,30 +157,29 @@ class Functions {
 		}
 		StringBuilder tableFunctions = new StringBuilder();
 		String sep = String.format("%s", "+----------".repeat(functions.size() + 1));
-		String plus = "+\n";
-		String slash = "|\n";
 		tableFunctions.append(sep);
-		tableFunctions.append(plus);
+		tableFunctions.append("+\n");
 		tableFunctions.append(String.format("|%10s", "x"));
 		for (int i = 0; i < functions.size(); i++) {
 			tableFunctions.append(String.format("|%10s", functions.get(i).toString()));
 		}
-		tableFunctions.append(slash);
+		tableFunctions.append("|\n");
 		tableFunctions.append(sep);
-		tableFunctions.append(plus);
+		tableFunctions.append("+\n");
 		for (double x = firstValue; x <= endValue; x += step) {
 			tableFunctions.append(String.format("|%10.3f", x));
 			for (int i = 0; i < functions.size(); i++) {
 				double value = functions.get(i).value(x);
-				if (Double.isFinite(value)) {
-					tableFunctions.append(String.format("|%10.3f", value));	
+				if (Double.isNaN(value)) {
+					tableFunctions.append(String.format("|%10s", "-"));
 				} else {
-					tableFunctions.append(String.format("|%10s", "-"));				}
+					tableFunctions.append(String.format("|%10.3f", value));
+				}
 			}
-			tableFunctions.append(slash);
+			tableFunctions.append("|\n");
 		}
 		tableFunctions.append(sep);
-		tableFunctions.append(plus);
+		tableFunctions.append("+\n");
 		return tableFunctions.toString();
 	}
 
@@ -197,7 +191,7 @@ class Functions {
 		double step = (endValue - firstValue) / (height - 1);
 		for (double x = firstValue; x <= endValue; x += step) {
 			double y = functions.get(numFunction - 1).value(x);
-			if (Double.isFinite(y)) {
+			if (Double.isNaN(y)!=true) {
 				minY = Math.min(minY, y);
 				maxY = Math.max(maxY, y);
 			} 
@@ -232,7 +226,7 @@ class Functions {
 		graph.append(String.format("%6.3f", maxY));
 		for (double x = firstValue; x <= endValue; x += step) {
 			double y = functions.get(numFunction - 1).value(x);
-			if (Double.isFinite(y)==false) {
+			if (Double.isNaN(y)) {
 				graph.append(String.format("\n%6.3f |", x));
 				graph.append(plot);
 			} else {
