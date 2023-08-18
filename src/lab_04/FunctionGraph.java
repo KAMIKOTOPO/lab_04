@@ -13,10 +13,12 @@ public class FunctionGraph {
 	public static void main(String[] args) throws IncorrectGraphDataException {
 		Scanner scr = new Scanner(System.in);
 		Functions functions = new Functions();
-		functions.add(new Function("S1", x-> 2* Math.log(x)-(1/x)));
-		functions.add(new Function("S2", x->  Math.pow(x, 3) - 7 * x + 6.5));
-//		functions.add(new Function("S3", x-> x <=0? Double.NaN : Math.pow(Math.E, -(Math.abs(2* Math.log(x)-(1/x))) + Math.abs(Math.pow(x, 3) - 7 * x + 6.5))));
-
+		Function s1 = new Function("S1", x-> 2* Math.log(x)-(1/x));
+		Function s2 = new Function("S2", x->  Math.pow(x, 3) - 7 * x + 6.5);
+		Function s3 = new Function("S3", x -> Math.pow(Math.E, -(Math.abs(s1.value(x)) + Math.abs(s2.value(x)))));
+		functions.add(s1);
+		functions.add(s2);
+		functions.add(s3);
 		System.out.println( );
 		while (true)
 			try {
@@ -32,7 +34,7 @@ public class FunctionGraph {
 				int x = scr.nextInt();
 				switch (x) {
 				case 1:
-					Graphic(functions);
+					graphic(functions);
 					break;
 				case 2:
 					partMenuTable(functions);
@@ -70,16 +72,16 @@ public class FunctionGraph {
 			step *= -1;
 			end = temp;
 		}
-		System.out.println(functions.creatTable(first, step, end));
+		System.out.println(functions.createTable(first, step, end));
 	}
 
 	public static void partMenuGraphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		StringBuilder enumerationFunctions = new StringBuilder("График какой функции вывести?\n");
 		for (int i = 0; i < functions.size(); i++) {
-			enumerationFunctions.append(String.format("Вывести график функции %s\n", functions.getFunction(i).toString()));
+			enumerationFunctions.append(String.format("%d)Вывести график функции %s\n", i+1, functions.getFunction(i).toString()));
 		}
-		System.out.println(enumerationFunctions.toString());
+		System.out.println(enumerationFunctions);
 		int numFunction = scanner.nextInt();
 		if(numFunction  < 1 || functions.size() < numFunction) {
 			throw new IncorrectGraphDataException("Под этим номером нет графика");
@@ -96,7 +98,7 @@ public class FunctionGraph {
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
 	}
 
-	public static void Graphic(Functions functions) throws IncorrectGraphDataException {
+	public static void graphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Введите ширину графика: ");
 		int width = scanner.nextInt();
@@ -107,14 +109,8 @@ public class FunctionGraph {
 		}
 		System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
 		functions.setWidth(width);
-		functions.setHeigth(height);
+		functions.setHeight(height);
 	}
-//	public void addFunction(Function function) {
-//		Scanner scanner = new Scanner(System.in);
-//		System.out.println("Введите название функции");
-//		String string = scanner.nextLine();
-//		System.out.println("Введите функцию используя");
-//	}
 }
 
 class Function {
@@ -135,14 +131,14 @@ class Function {
 
 class Functions {
 	private int width;
-	private int heigth;
+	private int height;
 	private List<Function> functions;
 	public Functions() {
 		this(80, 20);
 	}
 	public Functions(int width, int height) {
 		this.width = width;
-		this.heigth = height;
+		this.height = height;
 		this.functions = new ArrayList<Function>();
 	}
 	public void add(Function func) {
@@ -157,22 +153,26 @@ class Functions {
 	public void setWidth(int width) {
 		this.width = width;
 	}
-	public void setHeigth(int heigth) {
-		this.heigth = heigth;
+	public void setHeight(int height) {
+		this.height = height;
 	}
-	public String creatTable(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
+	public String createTable(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
 		if (step <= 0) {
 			throw new IncorrectGraphDataException("\nС таким шагом нельзя создать таблицу");
 		}
 		StringBuilder tableFunctions = new StringBuilder();
-		String sep = String.format("%s\n", "+----------".repeat(functions.size() + 1));
+		String sep = String.format("%s", "+----------".repeat(functions.size() + 1));
+		String plus = "+\n";
+		String slash = "|\n";
 		tableFunctions.append(sep);
+		tableFunctions.append(plus);
 		tableFunctions.append(String.format("|%10s", "x"));
 		for (int i = 0; i < functions.size(); i++) {
 			tableFunctions.append(String.format("|%10s", functions.get(i).toString()));
 		}
-		tableFunctions.append("|\n");
+		tableFunctions.append(slash);
 		tableFunctions.append(sep);
+		tableFunctions.append(plus);
 		for (double x = firstValue; x <= endValue; x += step) {
 			tableFunctions.append(String.format("|%10.3f", x));
 			for (int i = 0; i < functions.size(); i++) {
@@ -182,16 +182,15 @@ class Functions {
 				} else {
 					tableFunctions.append(String.format("|%10s", "-"));				}
 			}
-			tableFunctions.append("|\n");
+			tableFunctions.append(slash);
 		}
 		tableFunctions.append(sep);
+		tableFunctions.append(plus);
 		return tableFunctions.toString();
 	}
 
 	public String creatGraphic(double firstValue, double endValue, int serifs, int numFunction)throws IncorrectGraphDataException {
 		StringBuilder graph = new StringBuilder();
-		int height = this.heigth;
-		int width = this.width;
 		StringBuilder plot = new StringBuilder("-".repeat(width));
 		double minY = Integer.MAX_VALUE;
 		double maxY = Integer.MIN_VALUE;
@@ -201,11 +200,9 @@ class Functions {
 			if (Double.isFinite(y)) {
 				minY = Math.min(minY, y);
 				maxY = Math.max(maxY, y);
-			} else {
-				continue;
-			}
+			} 
 		}
-		if(minY == Integer.MAX_VALUE && maxY == Integer.MIN_VALUE) {
+		if(minY > maxY) {
 			return "График нет смысла выводить, так как нет ни одной точки";
 		}
 		int numWidth = 6;
@@ -227,26 +224,24 @@ class Functions {
 			double serifVal = minY + serifStep * i;
 			graph.append(String.format("%-6.3f", serifVal));
 			graph.append(" ".repeat(spaceWidth));
-
 			if (extraSpaces > 0) {
 				graph.append(" ");
 				extraSpaces--;
 			}
 		}
 		graph.append(String.format("%6.3f", maxY));
-		double x = firstValue;
-		for (x = firstValue; x <= endValue; x += step) {
+		for (double x = firstValue; x <= endValue; x += step) {
 			double y = functions.get(numFunction - 1).value(x);
-			if (Double.isFinite(y)) {
+			if (Double.isFinite(y)==false) {
+				graph.append(String.format("\n%6.3f |", x));
+				graph.append(plot);
+			} else {
 				graph.append(String.format("\n%6.3f |", x));
 				double yInterpolated = (y - minY) * (width - 1) / (maxY - minY);
 				int col = (int) Math.round(yInterpolated);
 				plot.setCharAt(col, '*');
 				graph.append(plot);
 				plot.setCharAt(col, '-');
-			} else {
-				graph.append(String.format("\n%6.3f |", x));
-				graph.append(plot);
 			}
 		}
 		return graph.toString();
