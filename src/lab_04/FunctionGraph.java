@@ -7,7 +7,7 @@ import java.util.function.DoubleUnaryOperator;
 
 public class FunctionGraph {
 	public static void main(String[] args) throws IncorrectGraphDataException {
-		Scanner scr = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 		Functions functions = new Functions();
 		Function s1 = new Function("S1", x-> 2* Math.log(x)-(1/x));
 		Function s2 = new Function("S2", x->  Math.pow(x, 3) - 7 * x + 6.5);
@@ -27,7 +27,7 @@ public class FunctionGraph {
 						4)Завершить работу программы
 						""");
 				System.out.print("Выберите одну из предложенных операций: ");
-				int x = scr.nextInt();
+				int x = scanner.nextInt();
 				switch (x) {
 				case 1:
 					graphic(functions);
@@ -46,15 +46,16 @@ public class FunctionGraph {
 				}
 			} catch (java.util.InputMismatchException e) {
 				System.out.println("\nВы ввели некоректные данные");
-				scr.nextLine();
+				scanner.nextLine();
 			} catch (IncorrectGraphDataException e) {
 				System.out.println(e.getMessage());
-				scr.nextLine();
+				scanner.nextLine();
 			}
 	}
 
 	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
+		try {
 		System.out.print("Введите первое значение: ");
 		double first = scanner.nextDouble();
 		System.out.print("Введите шаг: ");
@@ -68,10 +69,15 @@ public class FunctionGraph {
 			end = temp;
 		}
 		System.out.println(functions.createTable(first, step, end));
+		}catch (java.util.InputMismatchException e) {
+			System.out.println("\nВы ввели некоректные данные\n");
+			partMenuTable(functions);
+		}
 	}
 
 	public static void partMenuGraphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
+		try {
 		StringBuilder enumerationFunctions = new StringBuilder("График какой функции вывести?\n");
 		for (int i = 0; i < functions.size(); i++) {
 			enumerationFunctions.append(String.format("%d)Вывести график функции %s\n", i+1, functions.getFunction(i).toString()));
@@ -91,10 +97,15 @@ public class FunctionGraph {
 			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
 		}
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
+		}catch (java.util.InputMismatchException e) {
+			System.out.println("\nВы ввели некоректные данные\n");
+			partMenuGraphic(functions);
+		}
 	}
 
 	public static void graphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
+		try {
 		System.out.print("Введите ширину графика: ");
 		int width = scanner.nextInt();
 		System.out.print("Введите высоту графика: ");
@@ -105,6 +116,10 @@ public class FunctionGraph {
 		System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
 		functions.setWidth(width);
 		functions.setHeight(height);
+		}catch (java.util.InputMismatchException e) {
+			System.out.println("\nВы ввели некоректные данные\n");
+			graphic(functions);
+		}
 	}
 }
 
@@ -191,7 +206,7 @@ class Functions {
 		double step = (endValue - firstValue) / (height - 1);
 		for (double x = firstValue; x <= endValue; x += step) {
 			double y = functions.get(numFunction - 1).value(x);
-			if (Double.isNaN(y)!=true) {
+			if (!Double.isNaN(y)) {
 				minY = Math.min(minY, y);
 				maxY = Math.max(maxY, y);
 			} 
