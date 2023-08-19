@@ -45,7 +45,7 @@ public class FunctionGraph {
 					System.out.println("\nНет такой команды!!!");
 				}
 			} catch (java.util.InputMismatchException e) {
-				System.out.println("\nВы ввели некоректные данные");
+				System.out.println("\nВы ввели некорректные данные");
 				scanner.nextLine();
 			} catch (IncorrectGraphDataException e) {
 				System.out.println(e.getMessage());
@@ -55,13 +55,9 @@ public class FunctionGraph {
 
 	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		try {
-		System.out.print("Введите первое значение: ");
-		double first = scanner.nextDouble();
-		System.out.print("Введите шаг: ");
-		double step = scanner.nextDouble();
-		System.out.print("Введите последнее значение значение: ");
-		double end = scanner.nextDouble();
+		double first = checkInput("Введите первое значение: ");
+		double step = checkInput("Введите шаг: ");
+		double end = checkInput("Введите последнее значение значение: ");
 		if (first > end) {
 			double temp = first;
 			first = end;
@@ -69,56 +65,51 @@ public class FunctionGraph {
 			end = temp;
 		}
 		System.out.println(functions.createTable(first, step, end));
-		}catch (java.util.InputMismatchException e) {
-			System.out.println("\nВы ввели некоректные данные\n");
-			partMenuTable(functions);
-		}
 	}
 
 	public static void partMenuGraphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		try {
 		StringBuilder enumerationFunctions = new StringBuilder("График какой функции вывести?\n");
 		for (int i = 0; i < functions.size(); i++) {
-			enumerationFunctions.append(String.format("%d)Вывести график функции %s\n", i+1, functions.getFunction(i).toString()));
+			enumerationFunctions.append(
+					String.format("%d)Вывести график функции %s\n", i + 1, functions.getFunction(i).toString()));
 		}
-		System.out.println(enumerationFunctions);
-		int numFunction = scanner.nextInt();
-		if(numFunction  < 1 || functions.size() < numFunction) {
+		int numFunction = (int) checkInput(enumerationFunctions.toString());
+		if (numFunction < 1 || functions.size() < numFunction) {
 			throw new IncorrectGraphDataException("Под этим номером нет графика");
 		}
-		System.out.print("Введите первое значение: ");
-		double first = scanner.nextDouble();
-		System.out.print("Введите последнее значение: ");
-		double end = scanner.nextDouble();
-		System.out.print("Введите количество засечек: ");
-		int serifs = scanner.nextInt();
+		double first = checkInput("Введите первое значение: ");
+		double end = checkInput("Введите последнее значение: ");
+		int serifs = (int) checkInput("Введите количество засечек: ");
 		if (serifs <= 0) {
 			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
 		}
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
-		}catch (java.util.InputMismatchException e) {
-			System.out.println("\nВы ввели некоректные данные\n");
-			partMenuGraphic(functions);
-		}
 	}
 
 	public static void graphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		try {
-		System.out.print("Введите ширину графика: ");
-		int width = scanner.nextInt();
-		System.out.print("Введите высоту графика: ");
-		int height = scanner.nextInt();
-		if (width <= 0 || height <= 0) {
-			throw new IncorrectGraphDataException("Ширина и высота должна быть больше нуля");
-		}
-		System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
-		functions.setWidth(width);
-		functions.setHeight(height);
-		}catch (java.util.InputMismatchException e) {
-			System.out.println("\nВы ввели некоректные данные\n");
-			graphic(functions);
+			int width = (int) checkInput("Введите ширину графика: ");
+			int height = (int) checkInput("Введите высоту графика: ");
+			if (width <= 0 || height <= 0) {
+				throw new IncorrectGraphDataException("Ширина и высота должна быть больше нуля");
+			}
+			System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
+			functions.setWidth(width);
+			functions.setHeight(height); 
+	}
+
+	public static double checkInput(String str) {
+		Scanner scanner = new Scanner(System.in);
+		while (true) {
+			try {
+				System.out.print(str);
+				double x = scanner.nextDouble();
+				return x;
+			} catch (Exception e) {
+				System.out.println("Вы ввели некорректные данные");
+				scanner.nextLine();
+			}
 		}
 	}
 }
@@ -126,14 +117,16 @@ public class FunctionGraph {
 class Function {
 	private String name;
 	private DoubleUnaryOperator func;
-	
+
 	public Function(String name, DoubleUnaryOperator func) {
 		this.name = name;
 		this.func = func;
 	}
+
 	public double value(double x) {
 		return func.applyAsDouble(x);
 	}
+
 	public String toString() {
 		return name;
 	}
