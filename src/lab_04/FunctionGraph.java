@@ -55,9 +55,9 @@ public class FunctionGraph {
 
 	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		double first = checkInput("Введите первое значение: ");
-		double step = checkInput("Введите шаг: ");
-		double end = checkInput("Введите последнее значение значение: ");
+		double first = inputDouble("Введите первое значение: ");
+		double step = inputDouble("Введите шаг: ");
+		double end = inputDouble("Введите последнее значение значение: ");
 		if (first > end) {
 			double temp = first;
 			first = end;
@@ -74,36 +74,30 @@ public class FunctionGraph {
 			enumerationFunctions.append(
 					String.format("%d)Вывести график функции %s\n", i + 1, functions.getFunction(i).toString()));
 		}
-		int numFunction = (int) checkInput(enumerationFunctions.toString());
+		int numFunction = (int) inputDouble(enumerationFunctions.toString());
 		if (numFunction < 1 || functions.size() < numFunction) {
 			throw new IncorrectGraphDataException("Под этим номером нет графика");
 		}
-		double first = checkInput("Введите первое значение: ");
-		double end = checkInput("Введите последнее значение: ");
-		int serifs = (int) checkInput("Введите количество засечек: ");
-		if (serifs <= 0) {
-			throw new IncorrectGraphDataException("Засечек должно быть больше 0");
-		}
+		double first = inputDouble("Введите первое значение: ");
+		double end = inputDouble("Введите последнее значение: ");
+		int serifs = (int) checkNegativ("Введите количество засечек: ");
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
 	}
 
 	public static void graphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-			int width = (int) checkInput("Введите ширину графика: ");
-			int height = (int) checkInput("Введите высоту графика: ");
-			if (width <= 0 || height <= 0) {
-				throw new IncorrectGraphDataException("Ширина и высота должна быть больше нуля");
-			}
+			int width = (int) checkNegativ("Введите ширину графика: ");
+			int height = (int) checkNegativ("Введите высоту графика: ");
 			System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
 			functions.setWidth(width);
 			functions.setHeight(height); 
 	}
 
-	public static double checkInput(String str) {
+	public static double inputDouble(String prompt) {
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
 			try {
-				System.out.print(str);
+				System.out.print(prompt);
 				double x = scanner.nextDouble();
 				return x;
 			} catch (Exception e) {
@@ -111,6 +105,17 @@ public class FunctionGraph {
 				scanner.nextLine();
 			}
 		}
+	}
+	public static int checkNegativ(String prompt) {
+		int x = (int) inputDouble(prompt);
+		int y = 0;
+		if(x <= 0) {
+			System.out.println("Для этого значения не может использоваться отрицательное или равное нулю число");
+			checkNegativ(prompt);
+		}else {
+			y = x;
+		}
+		return y;
 	}
 }
 
