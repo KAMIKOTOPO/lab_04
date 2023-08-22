@@ -55,9 +55,9 @@ public class FunctionGraph {
 
 	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		double first = inputDouble("Введите первое значение: ", x-> x==x, "");
+		double first = inputDouble("Введите первое значение: ");
 		double step = checkNegativ("Введите шаг: ");
-		double end = inputDouble("Введите последнее значение значение: ", x-> x==x, "");
+		double end = inputDouble("Введите последнее значение значение: ");
 		if (first > end) {
 			double temp = first;
 			first = end;
@@ -76,23 +76,25 @@ public class FunctionGraph {
 		}
 		int numFunction = (int) inputDouble(enumerationFunctions.toString(), x -> x >= 1 && x < functions.size(),
 				"Под этим номером нет графика\n");
-		double first = inputDouble("Введите первое значение: ", x -> x==x, "");
-		double end = inputDouble("Введите последнее значение: ", x -> x==x, "");
-		int serifs = (int) inputDouble("Введите количество засечек: ", x -> x==x, "");
+		double first = inputDouble("Введите первое значение: ");
+		double end = inputDouble("Введите последнее значение: ");
+		int serifs = (int) inputDouble("Введите количество засечек: ");
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
 	}
 
 	public static void graphic(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-			int width = (int) checkNegativ("Введите ширину графика: ");
-			int height = (int) checkNegativ("Введите высоту графика: ");
-			System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
-			functions.setWidth(width);
-			functions.setHeight(height);
-		}
-	public interface Checker{
+		int width = (int) checkNegativ("Введите ширину графика: ");
+		int height = (int) checkNegativ("Введите высоту графика: ");
+		System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
+		functions.setWidth(width);
+		functions.setHeight(height);
+	}
+
+	public interface Checker {
 		boolean check(double val);
 	}
+
 	public static double inputDouble(String prompt, Checker checker, String errMsg) {
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
@@ -109,9 +111,14 @@ public class FunctionGraph {
 			}
 		}
 	}
+
 	public static int checkNegativ(String prompt) {
 		String errMsg = "Для этого значения не может использоваться отрицательное или равное нулю число";
 		return (int) inputDouble(prompt, x -> x > 0, errMsg);
+	}
+
+	public static double inputDouble(String prompt) {
+		return (int) inputDouble(prompt, x -> true, "");
 	}
 }
 
