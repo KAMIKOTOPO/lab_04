@@ -9,13 +9,13 @@ public class FunctionGraph {
 	public static void main(String[] args) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
 		Functions functions = new Functions();
-		Function s1 = new Function("S1", x-> 2* Math.log(x)-(1/x));
-		Function s2 = new Function("S2", x->  Math.pow(x, 3) - 7 * x + 6.5);
+		Function s1 = new Function("S1", x -> 2 * Math.log(x) - (1 / x));
+		Function s2 = new Function("S2", x -> Math.pow(x, 3) - 7 * x + 6.5);
 		Function s3 = new Function("S3", x -> Math.pow(Math.E, -(Math.abs(s1.value(x)) + Math.abs(s2.value(x)))));
 		functions.add(s1);
 		functions.add(s2);
 		functions.add(s3);
-		System.out.println( );
+		System.out.println();
 		while (true)
 			try {
 				System.out.println();
@@ -55,9 +55,9 @@ public class FunctionGraph {
 
 	public static void partMenuTable(Functions functions) throws IncorrectGraphDataException {
 		Scanner scanner = new Scanner(System.in);
-		double first = inputDouble("Введите первое значение: ");
-		double step = inputDouble("Введите шаг: ");
-		double end = inputDouble("Введите последнее значение значение: ");
+		double first = inputDouble("Введите первое значение: ", x-> x==x, "");
+		double step = checkNegativ("Введите шаг: ");
+		double end = inputDouble("Введите последнее значение значение: ", x-> x==x, "");
 		if (first > end) {
 			double temp = first;
 			first = end;
@@ -74,13 +74,11 @@ public class FunctionGraph {
 			enumerationFunctions.append(
 					String.format("%d)Вывести график функции %s\n", i + 1, functions.getFunction(i).toString()));
 		}
-		int numFunction = (int) inputDouble(enumerationFunctions.toString());
-		if (numFunction < 1 || functions.size() < numFunction) {
-			throw new IncorrectGraphDataException("Под этим номером нет графика");
-		}
-		double first = inputDouble("Введите первое значение: ");
-		double end = inputDouble("Введите последнее значение: ");
-		int serifs = (int) checkNegativ("Введите количество засечек: ");
+		int numFunction = (int) inputDouble(enumerationFunctions.toString(), x -> x >= 1 && x < functions.size(),
+				"Под этим номером нет графика\n");
+		double first = inputDouble("Введите первое значение: ", x -> x==x, "");
+		double end = inputDouble("Введите последнее значение: ", x -> x==x, "");
+		int serifs = (int) inputDouble("Введите количество засечек: ", x -> x==x, "");
 		System.out.println(functions.creatGraphic(first, end, serifs, numFunction));
 	}
 
@@ -90,16 +88,21 @@ public class FunctionGraph {
 			int height = (int) checkNegativ("Введите высоту графика: ");
 			System.out.printf("\nВы задали ширину %d и высоту %d", width, height);
 			functions.setWidth(width);
-			functions.setHeight(height); 
+			functions.setHeight(height);
+		}
+	public interface Checker{
+		boolean check(double val);
 	}
-
-	public static double inputDouble(String prompt) {
+	public static double inputDouble(String prompt, Checker checker, String errMsg) {
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
 			try {
 				System.out.print(prompt);
 				double x = scanner.nextDouble();
-				return x;
+				if (checker.check(x)) {
+					return x;
+				}
+				System.out.println(errMsg);
 			} catch (Exception e) {
 				System.out.println("Вы ввели некорректные данные");
 				scanner.nextLine();
@@ -107,15 +110,8 @@ public class FunctionGraph {
 		}
 	}
 	public static int checkNegativ(String prompt) {
-		int x = (int) inputDouble(prompt);
-		int y = 0;
-		if(x <= 0) {
-			System.out.println("Для этого значения не может использоваться отрицательное или равное нулю число");
-			checkNegativ(prompt);
-		}else {
-			y = x;
-		}
-		return y;
+		String errMsg = "Для этого значения не может использоваться отрицательное или равное нулю число";
+		return (int) inputDouble(prompt, x -> x > 0, errMsg);
 	}
 }
 
@@ -141,33 +137,41 @@ class Functions {
 	private int width;
 	private int height;
 	private List<Function> functions;
+
 	public Functions() {
 		this(80, 20);
 	}
+
 	public Functions(int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.functions = new ArrayList<Function>();
 	}
+
 	public void add(Function func) {
 		functions.add(func);
 	}
+
 	public int size() {
 		return functions.size();
 	}
+
 	public Function getFunction(int i) {
 		return functions.get(i);
 	}
+
 	public void setWidth(int width) {
 		this.width = width;
 	}
+
 	public void setHeight(int height) {
 		this.height = height;
 	}
+
 	public String createTable(double firstValue, double step, double endValue) throws IncorrectGraphDataException {
-		if (step <= 0) {
-			throw new IncorrectGraphDataException("\nС таким шагом нельзя создать таблицу");
-		}
+//		if (step <= 0) {
+//			throw new IncorrectGraphDataException("\nС таким шагом нельзя создать таблицу");
+//		}
 		StringBuilder tableFunctions = new StringBuilder();
 		String sep = String.format("%s", "+----------".repeat(functions.size() + 1));
 		tableFunctions.append(sep);
@@ -196,7 +200,8 @@ class Functions {
 		return tableFunctions.toString();
 	}
 
-	public String creatGraphic(double firstValue, double endValue, int serifs, int numFunction)throws IncorrectGraphDataException {
+	public String creatGraphic(double firstValue, double endValue, int serifs, int numFunction)
+			throws IncorrectGraphDataException {
 		StringBuilder graph = new StringBuilder();
 		StringBuilder plot = new StringBuilder("-".repeat(width));
 		double minY = Integer.MAX_VALUE;
@@ -207,9 +212,9 @@ class Functions {
 			if (!Double.isNaN(y)) {
 				minY = Math.min(minY, y);
 				maxY = Math.max(maxY, y);
-			} 
+			}
 		}
-		if(minY > maxY) {
+		if (minY > maxY) {
 			return "График нет смысла выводить, так как нет ни одной точки";
 		}
 		int numWidth = 6;
